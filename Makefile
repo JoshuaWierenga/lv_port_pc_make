@@ -47,7 +47,7 @@ smallwin64drv:   LDFLAGS := -Wl,--gc-sections
 # Add simulator define to allow modification of source
 build:              DEFINES += -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D LV_USE_DEMO_WIDGETS=1
 $(WIN64TARGETS):    DEFINES += -D __WIN64__ -D LV_PRId32=PRId32 -D LV_PRIu32=PRIu32
-$(SDLTARGETS):      DEFINES += -D USE_MONITOR=1
+$(SDLTARGETS):      DEFINES += -D USE_SDL=1
 # Setting WINVER to windows 7 as win32drv needs it for touch support
 $(WIN32DRVTARGETS): DEFINES += -D USE_WIN32DRV=1 -D WINVER=_WIN32_WINNT_WIN7 -D _WIN32_WINNT=_WIN32_WINNT_WIN7
 
