@@ -85,6 +85,7 @@ static int showCmd = 0;
  *   GLOBAL FUNCTIONS
  **********************/
 
+#if 0
 static void user_image_demo()
 {
   lv_obj_t * img = lv_gif_create(lv_scr_act());
@@ -169,6 +170,7 @@ static void user_image_demo()
     lv_ffmpeg_player_set_cmd(player, LV_FFMPEG_PLAYER_CMD_START);
     lv_obj_align(player, LV_ALIGN_TOP_MID, 0, 20);
 }
+#endif
 
 #if USE_WIN32DRV
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -204,8 +206,8 @@ int main(int argc, char **argv)
   #elif LV_USE_DEMO_WIDGETS /*add -D LV_USE_DEMO_WIDGETS=1 to your make file*/
   lv_demo_widgets();
   #else
-  user_image_demo();
-  //my_gui(); /*replace this with your gui*/
+  //user_image_demo();
+  my_gui(); /*replace this with your gui*/
   #endif
 
 #if USE_WIN32DRV

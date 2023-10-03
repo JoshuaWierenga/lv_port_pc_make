@@ -52,10 +52,10 @@ $(SDLTARGETS):      DEFINES += -D USE_SDL=1
 $(WIN32DRVTARGETS): DEFINES += -D USE_WIN32DRV=1 -D WINVER=_WIN32_WINNT_WIN7 -D _WIN32_WINNT=_WIN32_WINNT_WIN7
 
 # Include simulator inc folder first so lv_conf.h from custom UI can be used instead
-INC    += -I./ui/simulator/inc -I. -I./lvgl -I/usr/include/freetype2 -L/usr/local/lib
-LDLIBS := -lfreetype -lavformat -lavcodec -lavutil -lswscale -lz -lpthread
+INC    += -I./ui/simulator/inc -I. -I./lvgl #-I/usr/include/freetype2 -L/usr/local/lib
+LDLIBS += #-lfreetype -lavformat -lavcodec -lavutil -lswscale -lz -lpthread
 BIN    := $(BIN_DIR)/demo
-$(SDLTARGETS): LDLIBS := -lSDL2 -lm
+$(SDLTARGETS): LDLIBS += -lSDL2 -lm
 ifneq ($(OS),Windows_NT)
 INC += -I./winfix
 endif
