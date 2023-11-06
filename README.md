@@ -9,10 +9,11 @@ Using a PC simulator instead of an embedded hardware has several advantages:
 * **Developer friendly** because much easier and faster to debug on PC
 
 ## Requirements
-This project is configured for Make and has been tested on MSYS2, Linux and WSL, although it may work on BSDs, Cygwin and macOS among others. It requires a working version of GCC and Make in your path and optionally SDL if support for oses other than Windows is desired.
+This project is configured for Make and has been tested on MSYS2, Linux and WSL, although it may work on BSDs, Cygwin and macOS among others. It requires a working version of GCC and Make in your path and optionally **SDL** or **X11** if support for oses other than Windows is desired.
 Outdated but possibly still accurate Cygwin instructions exist for some steps.
 
-* **SDL** a low level driver library to use graphics, handle mouse, keyboard etc.
+The project can use **SDL**, the raw **Win32** API or **X11** as a LVGL display driver for lowlevel graphics/mouse/keyboard support. This can be selected using different make targets.
+Please make sure the selected library is installed in the system (check [Install graphics driver](#install-graphics-driver)).
 
 ## Usage
 
@@ -24,15 +25,19 @@ Clone the PC project and the related sub modules:
 git clone --recursive https://github.com/JoshuaWierenga/lv_port_pc_make
 ```
 
-### Optionally install SDL
-You can download SDL from https://www.libsdl.org/
+### Install graphics driver
+The project can use **SDL**, the raw **Win32** API or **X11** as a LVGL display driver.
+Please make sure the selected library is installed in the system:
 
-On Linux you can install it via terminal. Below is a example for Debian based distros:
+#### Install SDL
+You can download **SDL** from https://www.libsdl.org/ if none of the following cases cover your setup.
+
+On Linux you can normally install it via a terminal. Below is a example for Debian based distros:
 ```bash
-sudo apt-get update && sudo apt-get install -y build-essential libsdl2-dev
+sudo apt-get update && sudo apt-get install -y libsdl2-dev
 ```
 
-On Windows with MSYS2 you can install it via terminal:
+On Windows with MSYS2 you can install it via a terminal:
 ```bash
 pacman -S mingw-w64-x86_64-SDL2
 ```
@@ -47,13 +52,27 @@ C:\(lv_sim_vscode_sdl source directory)\ui\simulator\dlls\SDL2.dll
 C:\(lv_sim_vscode_sdl source directory)\ui\simulator\inc\SDL2\*.h
 ```
 
+#### Install Win32
+The **Win32** Windowing APIs are automatically available on windows and can be obtained on Linux via [Wine](https://www.winehq.org/) but such a setup is currently beyond the scope of this project.
+
+#### Install X11
+The **X11** Window System was the default on Linux via Xorg for many years but is currently
+being displaced by Wayland which is not currently supported however X11 applications should run
+via XWayland but this is not something I have any experience with(does it ship with Wayland?).
+Ideally this means that either Xorg or XWayland would be installed on all major distros and so
+the only thing required are the headers for your distro which can normally be obtained via a
+terminal. Below is a example for Debian based distros:
+```bash
+sudo apt-get update && sudo apt-get install -y libx11-dev
+```
+
 ### Build
-On Linux or Windows with WSL use the unixsdl make target.
+On Linux or Windows with WSL use the unixsdl or unixx11 make targets.
 ```bash
 make unixsdl
 ```
 
-On Windows with MSYS2 or WSL use the win64sdl, win64drv and smallwin64drv make targets:
+On Windows with MSYS2 or WSL use the smallwin64drv, win64drv and win64sdl make targets:
 ```bash
 make win64drv
 ```
@@ -92,8 +111,8 @@ sudo make install
 
 And then remove all the comments in the `Makefile` on `INC` and `LDLIBS` lines. They should be:
 ```Makefile
-INC    := -I./ui/simulator/inc -I. -I./lvgl -I/usr/include/freetype2 -L/usr/local/lib
-LDLIBS := -lfreetype -lavformat -lavcodec -lavutil -lswscale -lm -lz -lpthread
+INC    += -I./ui/simulator/inc -I. -I./lvgl -I/usr/include/freetype2 -L/usr/local/lib
+LDLIBS := -lfreetype -lavformat -lavcodec -lavutil -lswscale -lz -lpthread
 ```
 
 ### Setup
