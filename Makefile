@@ -8,8 +8,13 @@ MAKEFLAGS 			:= -j $(shell nproc)
 SRC_EXT      		:= c
 OBJ_EXT				:= o
 all: CC 			:= gcc
+ifeq ($(OS),Windows_NT)
 win64: CC 			:= x86_64-w64-mingw32-gcc.exe
 smallwin64: CC 		:= x86_64-w64-mingw32-gcc.exe
+else
+win64: CC 			:= x86_64-w64-mingw32-gcc
+smallwin64: CC 		:= x86_64-w64-mingw32-gcc
+endif
 
 
 
@@ -33,9 +38,10 @@ all: LDFLAGS 		:=
 smallwin64: LDFLAGS 		:= -Wl,--gc-sections
 
 # Add simulator define to allow modification of source
+# Setting WINVER to windows 7 as win32drv needs it for touch support
 all: DEFINES				:= -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D LV_USE_DEMO_WIDGETS=1
-win64: DEFINES				:= -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D __WIN64__ -D LV_PRId32=PRId32 -D LV_PRIu32=PRIu32 -D LV_USE_DEMO_WIDGETS=1
-smallwin64: DEFINES			:= -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D __WIN64__ -D LV_PRId32=PRId32 -D LV_PRIu32=PRIu32 -D LV_USE_DEMO_WIDGETS=1
+win64: DEFINES				:= -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D __WIN64__ -D LV_PRId32=PRId32 -D LV_PRIu32=PRIu32 -D LV_USE_DEMO_WIDGETS=1 -D WINVER=_WIN32_WINNT_WIN7 -D _WIN32_WINNT=_WIN32_WINNT_WIN7
+smallwin64: DEFINES			:= -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D __WIN64__ -D LV_PRId32=PRId32 -D LV_PRIu32=PRIu32 -D LV_USE_DEMO_WIDGETS=1 -D WINVER=_WIN32_WINNT_WIN7 -D _WIN32_WINNT=_WIN32_WINNT_WIN7
 
 # Include simulator inc folder first so lv_conf.h from custom UI can be used instead
 INC 				:= -I./ui/simulator/inc -I. -I./lvgl
