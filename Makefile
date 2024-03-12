@@ -44,9 +44,12 @@ win64: DEFINES				:= -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE
 smallwin64: DEFINES			:= -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D __WIN64__ -D LV_PRId32=PRId32 -D LV_PRIu32=PRIu32 -D LV_USE_DEMO_WIDGETS=1 -D WINVER=_WIN32_WINNT_WIN7 -D _WIN32_WINNT=_WIN32_WINNT_WIN7
 
 # Include simulator inc folder first so lv_conf.h from custom UI can be used instead
-INC 				:= -I./ui/simulator/inc -I. -I./lvgl
+INC 				+= -I./ui/simulator/inc -I. -I./lvgl
 all: LDLIBS	 		:= -lSDL2 -lm
 BIN 				:= $(BIN_DIR)/demo
+ifneq ($(OS),Windows_NT)
+INC += -I./winfix
+endif
 
 COMPILE				= $(CC) $(CFLAGS) $(INC) $(DEFINES)
 
