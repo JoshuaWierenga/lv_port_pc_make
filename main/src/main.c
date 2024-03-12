@@ -83,7 +83,7 @@ static int showCmd = 0;
  *   GLOBAL FUNCTIONS
  **********************/
 
-#ifdef USE_WIN32DRV
+#if USE_WIN32DRV
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
   (void)hPrevInstance; /* Unused*/
@@ -169,13 +169,11 @@ static void hal_init(void)
 
   lv_disp_t * disp = lv_disp_drv_register(&disp_drv);
 
-  #ifdef LV_USE_THEME_MONO
-    lv_theme_t * th = lv_theme_mono_init(disp, LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
-    #elif
-    #ifdef LV_USE_THEME_DEFAULT
-      lv_theme_t * th = lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
-    #endif
-  #endif
+#if LV_USE_THEME_MONO
+  lv_theme_t * th = lv_theme_mono_init(disp, LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
+#elif LV_USE_THEME_DEFAULT
+  lv_theme_t * th = lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
+#endif
 
   lv_disp_set_theme(disp, th);
 

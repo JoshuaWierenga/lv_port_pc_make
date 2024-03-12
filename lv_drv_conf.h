@@ -120,7 +120,7 @@
  *  Native Windows (win32drv)
  *---------------------------*/
 #ifndef USE_WIN32DRV
-#  define USE_WIN32DRV       1
+#  define USE_WIN32DRV       0
 #endif
 
 #if USE_WIN32DRV
@@ -411,7 +411,7 @@
  *   Keyboard of a PC (using SDL)
  *------------------------------*/
 #ifndef USE_KEYBOARD
-#  define USE_KEYBOARD        0
+#  define USE_KEYBOARD        1
 #endif
 
 #if USE_KEYBOARD
