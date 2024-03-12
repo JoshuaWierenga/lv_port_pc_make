@@ -10,15 +10,20 @@
 #define _DEFAULT_SOURCE /* needed for usleep() */
 #include <stdlib.h>
 #include <unistd.h>
-#define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
-#include <SDL2/SDL.h>
 #include "lvgl/lvgl.h"
 #include "lvgl/examples/lv_examples.h"
 #include "lvgl/demos/lv_demos.h"
 #include "lv_drivers/display/monitor.h"
+#if USE_MONITOR
+#define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
+#include <SDL2/SDL.h>
 #include "lv_drivers/indev/mouse.h"
 #include "lv_drivers/indev/keyboard.h"
 #include "lv_drivers/indev/mousewheel.h"
+#elif USE_WIN32DRV
+#include <windows.h>
+#include "lv_drivers/win32drv/win32drv.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -32,15 +37,27 @@
  *  STATIC PROTOTYPES
  **********************/
 static void hal_init(void);
+#if USE_MONITOR
 static int tick_thread(void *data);
+#elif USE_WIN32DRV
+static DWORD tick_thread(void *data);
+#endif
 
 /**********************
  *  STATIC VARIABLES
  **********************/
+#if USE_WIN32DRV
+static HINSTANCE instance = NULL;
+static int showCmd = 0;
+#endif
 
 /**********************
  *      MACROS
  **********************/
+#if !USE_MONITOR
+#define MONITOR_HOR_RES 800
+#define MONITOR_VER_RES 600
+#endif
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -66,10 +83,20 @@ static int tick_thread(void *data);
  *   GLOBAL FUNCTIONS
  **********************/
 
+#ifdef USE_WIN32DRV
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+{
+  (void)hPrevInstance; /* Unused*/
+  (void)lpCmdLine; /*Unused*/
+
+  instance = hInstance;
+  showCmd = nShowCmd;
+#else
 int main(int argc, char **argv)
 {
   (void)argc; /*Unused*/
   (void)argv; /*Unused*/
+#endif
 
   /*Initialize LVGL*/
   lv_init();
@@ -93,7 +120,11 @@ int main(int argc, char **argv)
   my_gui(); /*replace this with your gui*/
   #endif
 
+#if USE_WIN32DRV
+  while(!lv_win32_quit_signal) {
+#else
   while(1) {
+#endif
     /* Periodically call the lv_task handler.
      * It could be done in a timer interrupt or an OS task too.*/
     lv_timer_handler();
@@ -113,6 +144,7 @@ int main(int argc, char **argv)
  */
 static void hal_init(void)
 {
+#if USE_MONITOR
   /* Use the 'monitor' driver which creates window on PC's monitor to simulate a display*/
   monitor_init();
   /* Tick init.
@@ -177,11 +209,21 @@ static void hal_init(void)
   lv_indev_t * enc_indev = lv_indev_drv_register(&indev_drv_3);
   lv_indev_set_group(enc_indev, g);
 
+  // TODO: Support this with win32drv? Currently it results in two mouse cursors
   /*Set a cursor for the mouse*/
   LV_IMG_DECLARE(mouse_cursor_icon); /*Declare the image file.*/
   lv_obj_t * cursor_obj = lv_img_create(lv_scr_act()); /*Create an image object for the cursor */
   lv_img_set_src(cursor_obj, &mouse_cursor_icon);           /*Set the image source*/
   lv_indev_set_cursor(mouse_indev, cursor_obj);             /*Connect the image  object to the driver*/
+#elif USE_WIN32DRV
+  /* Init monitor, mouse and keyboard */
+  lv_win32_init(instance, showCmd, MONITOR_HOR_RES, MONITOR_VER_RES, NULL);
+
+  /* Tick init.
+   * You have to call 'lv_tick_inc()' in periodically to inform LittelvGL about
+   * how much time were elapsed Create an SDL thread to do this*/
+  CreateThread(NULL, 0, tick_thread, NULL, 0, NULL);
+#endif
 }
 
 /**
@@ -189,11 +231,19 @@ static void hal_init(void)
  * @param data unused
  * @return never return
  */
+#if USE_MONITOR
 static int tick_thread(void *data) {
+#elif USE_WIN32DRV
+static DWORD tick_thread(void *data) {
+#endif
   (void)data;
 
   while(1) {
+#if USE_MONITOR
     SDL_Delay(5);
+#elif USE_WIN32DRV
+    Sleep(5);
+#endif
     lv_tick_inc(5); /*Tell LittelvGL that 5 milliseconds were elapsed*/
   }
 
