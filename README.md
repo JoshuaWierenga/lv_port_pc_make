@@ -1,6 +1,8 @@
 # Simulator project for LVGL embedded GUI Library
 
-The [LVGL](https://github.com/lvgl/lvgl) is written mainly for microcontrollers and embedded systems however you can run the library **on your PC** as well without any embedded hardware. The code written on PC can be simply copied when your are using an embedded system.
+The [LVGL](https://github.com/lvgl/lvgl) is written mainly for microcontrollers and embedded
+systems however you can run the library **on your PC** as well without any embedded hardware.
+The code written on PC can be simply copied when your are using an embedded system.
 
 Using a PC simulator instead of an embedded hardware has several advantages:
 * **Costs $0** because you don't have to buy or design PCB
@@ -9,10 +11,13 @@ Using a PC simulator instead of an embedded hardware has several advantages:
 * **Developer friendly** because much easier and faster to debug on PC
 
 ## Requirements
-This project is configured for Make and has been tested on MSYS2, Linux and WSL, although it may work on BSDs, Cygwin and macOS among others. It requires a working version of GCC and Make in your path and optionally **SDL** or **X11** if support for oses other than Windows is desired.
+This project is configured for Make and has been tested on MSYS2, Linux and WSL, although it
+may work on BSDs, Cygwin and macOS among others. It requires a working version of GCC and Make
+in your path and optionally **SDL** or **X11** if support for oses other than Windows is desired.
 Outdated but possibly still accurate Cygwin instructions exist for some steps.
 
-The project can use **SDL**, the raw **Win32** API or **X11** as a LVGL display driver for lowlevel graphics/mouse/keyboard support. This can be selected using different make targets.
+The project can use **SDL**, the raw **Win32** API or **X11** as a LVGL display driver for
+lowlevel graphics/mouse/keyboard support. This can be selected using different make targets.
 Please make sure the selected library is installed in the system (check [Install graphics driver](#install-graphics-driver)).
 
 ## Usage
@@ -45,7 +50,9 @@ Then copy "/mingw64/bin/SDL2.dll" to either your "Windows\System32" directory or
 Alternatively just run the demo program from within the terminal where SDL2.dll is already accessible.
 
 Old Windows instructions(cygwin, msvc?):
-On Windows copy "SDL2.dll" to your "Windows\System32" directory and the "ui\simulator\dlls" directory. Copy the SDL2 source code "include" directory to "ui\simulator\inc" name it "SDL2", the final paths look like this:
+On Windows copy "SDL2.dll" to your "Windows\System32" directory and the "ui\simulator\dlls" directory.
+Copy the SDL2 source code "include" directory to "ui\simulator\inc" name it "SDL2", the final paths
+look like this:
 ```
 C:\Windows\System32\SDL2.dll
 C:\(lv_sim_vscode_sdl source directory)\ui\simulator\dlls\SDL2.dll
@@ -53,7 +60,8 @@ C:\(lv_sim_vscode_sdl source directory)\ui\simulator\inc\SDL2\*.h
 ```
 
 #### Install Win32
-The **Win32** Windowing APIs are automatically available on windows and can be obtained on Linux via [Wine](https://www.winehq.org/) but such a setup is currently beyond the scope of this project.
+The **Win32** Windowing APIs are automatically available on windows and can be obtained on Linux
+via [Wine](https://www.winehq.org/) but such a setup is currently beyond the scope of this project.
 
 #### Install X11
 The **X11** Window System was the default on Linux via Xorg for many years but is currently
@@ -76,13 +84,17 @@ On Windows with MSYS2 or WSL use the smallwin64drv, win64drv and win64sdl make t
 ```bash
 make win64drv
 ```
-Make sure to run clean before using a different target as the make targets currently don't check if any files were built for a different target before reusing them.
+Make sure to run clean before using a different target as the make targets currently don't
+check if any files were built for a different target before reusing them.
 ```bash
 make clean
 ```
 
 Old Windows instructions:
-On Windows install Cygwin from https://www.cygwin.com. Select the appropriate compiler during installation (x86_64-w64-mingw32-gcc). Add the Cygwin binaries directory path ( C:\cygwin64\bin for example ) to the "Path" "System Environment Variable" via Windows Settings. Use the win64sdl target to build via the command line:
+On Windows install Cygwin from https://www.cygwin.com. Select the appropriate compiler during
+installation (x86_64-w64-mingw32-gcc). Add the Cygwin binaries directory path ( C:\cygwin64\bin for example )
+to the "Path" "System Environment Variable" via Windows Settings.
+Use the win64sdl target to build via the command line:
 ```
 make win64sdl
 ```
@@ -116,6 +128,9 @@ LDLIBS := -lfreetype -lavformat -lavcodec -lavutil -lswscale -lz -lpthread
 ```
 
 ### Setup
-To allow custom UI code an `lv_conf.h` file placed at `ui/simulator/inc` will automatically override this projects lv_conf.h file. By default code under `ui` is ignored so you can reuse this repository for multiple projects. You will need to place a call from `main.c` to your UI's entry function.
+To allow custom UI code an `lv_conf.h` file placed at `ui/simulator/inc` will automatically
+override this projects lv_conf.h file. By default code under `ui` is ignored so you can reuse
+this repository for multiple projects. You will need to place a call from `main.c` to your UI's
+entry function.
 
 To allow temporary modification between simulator and device code, a SIMULATOR=1 define is added globally.
