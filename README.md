@@ -9,9 +9,8 @@ Using a PC simulator instead of an embedded hardware has several advantages:
 * **Developer friendly** because much easier and faster to debug on PC
 
 ## Requirements
-This project is configured for VSCode and only tested on Linux, although this may work on OSx or WSL. It requires a working version of GCC, GDB and make in your path.
-
-To allow debugging inside VSCode you will also require a GDB [extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) or other suitable debugger.
+This project is configured for Make and has been tested on MSYS2, Linux and WSL, although it may work on BSDs, Cygwin and macOS among others. It requires a working version of GCC and Make in your path and optionally SDL if support for oses other than Windows is desired.
+Outdated but possibly still accurate Cygwin instructions exist for some steps.
 
 * **SDL** a low level driver library to use graphics, handle mouse, keyboard etc.
 
@@ -25,16 +24,16 @@ Clone the PC project and the related sub modules:
 git clone --recursive https://github.com/JoshuaWierenga/lv_port_pc_make
 ```
 
-### Install SDL
+### Optionally install SDL
 You can download SDL from https://www.libsdl.org/
 
-On Linux you can install it via terminal:
+On Linux you can install it via terminal. Below is a example for Debian based distros:
 ```bash
 sudo apt-get update && sudo apt-get install -y build-essential libsdl2-dev
 ```
 
-On windows with msys2 you can install it via terminal:
-```
+On Windows with MSYS2 you can install it via terminal:
+```bash
 pacman -S mingw-w64-x86_64-SDL2
 ```
 Then copy "/mingw64/bin/SDL2.dll" to either your "Windows\System32" directory or to "build\bin".
@@ -49,14 +48,24 @@ C:\(lv_sim_vscode_sdl source directory)\ui\simulator\inc\SDL2\*.h
 ```
 
 ### Build
-On Linux use the default make target. Select "g++ build and debug active file" from the VS Code "RUN AND DEBUG" drop down, or via the command line:
-```
-make
+On Linux or Windows with WSL use the unixsdl make target.
+```bash
+make unixsdl
 ```
 
-On Windows install Cygwin from https://www.cygwin.com. Select the appropriate compiler and debugger during installation (x86_64-w64-mingw32-gcc, gdb). Add the Cygwin binaries directory path ( C:\cygwin64\bin for example ) to the "Path" "System Environment Variable" via Windows Settings. Use the win64 target to build. Select "win64 build and debug active file" from the VS Code "RUN AND DEBUG" drop down, or via the command line:
+On Windows with MSYS2 or WSL use the win64sdl, win64drv and smallwin64drv make targets:
+```bash
+make win64drv
 ```
-make win64
+Make sure to run clean beforce using a different target as the make targets currently don't check if any files were built for a different target before reusing them.
+```bash
+make clean
+```
+
+Old Windows instructions:
+On Windows install Cygwin from https://www.cygwin.com. Select the appropriate compiler during installation (x86_64-w64-mingw32-gcc). Add the Cygwin binaries directory path ( C:\cygwin64\bin for example ) to the "Path" "System Environment Variable" via Windows Settings. Use the win64sdl target to build via the command line:
+```
+make win64sdl
 ```
 
 ### Optional library
@@ -83,13 +92,11 @@ sudo make install
 
 And then remove all the comments in the `Makefile` on `INC` and `LDLIBS` lines. They should be:
 ```Makefile
-INC 				:= -I./ui/simulator/inc/ -I./ -I./lvgl/ -I/usr/include/freetype2 -L/usr/local/lib
-LDLIBS	 			:= -lSDL2 -lm -lfreetype -lavformat -lavcodec -lavutil -lswscale -lm -lz -lpthread
+INC    := -I./ui/simulator/inc -I. -I./lvgl -I/usr/include/freetype2 -L/usr/local/lib
+LDLIBS := -lfreetype -lavformat -lavcodec -lavutil -lswscale -lm -lz -lpthread
 ```
 
 ### Setup
 To allow custom UI code an `lv_conf.h` file placed at `ui/simulator/inc` will automatically override this projects lv_conf.h file. By default code under `ui` is ignored so you can reuse this repository for multiple projects. You will need to place a call from `main.c` to your UI's entry function.
-
-To build and debug, press F5. You should now have your UI displayed in a new window and can access all the debug features of VSCode through GDB.
 
 To allow temporary modification between simulator and device code, a SIMULATOR=1 define is added globally.
