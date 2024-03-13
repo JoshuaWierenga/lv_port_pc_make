@@ -38,6 +38,7 @@ On windows with msys2 you can install it via terminal:
 pacman -S mingw-w64-x86_64-SDL2
 ```
 Then copy "/mingw64/bin/SDL2.dll" to either your "Windows\System32" directory or to "build\bin".
+Alternatively just run the demo program from within the terminal where SDL2.dll is already accessible.
 
 Old Windows instructions(cygwin, msvc?):
 On Windows copy "SDL2.dll" to your "Windows\System32" directory and the "ui\simulator\dlls" directory. Copy the SDL2 source code "include" directory to "ui\simulator\inc" name it "SDL2", the final paths look like this:
