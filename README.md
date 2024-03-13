@@ -57,7 +57,7 @@ On Windows with MSYS2 or WSL use the win64sdl, win64drv and smallwin64drv make t
 ```bash
 make win64drv
 ```
-Make sure to run clean beforce using a different target as the make targets currently don't check if any files were built for a different target before reusing them.
+Make sure to run clean before using a different target as the make targets currently don't check if any files were built for a different target before reusing them.
 ```bash
 make clean
 ```
