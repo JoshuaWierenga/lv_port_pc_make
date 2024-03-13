@@ -86,7 +86,7 @@ install: ${BIN}
 # TODO: Fix seg fault on linux with LV_USE_THEME_MONO enabled
 # TODO: Fix keyboard support with win32drv hal
 # TODO: Fix performance issues with win32drv hal(just animations?)
-# TODO: Add x11 support, original repo without windows support had it so shouldn't be hard
+# TODO: Add x11 support on windows using nano-X?
 # TODO: Update to a newer lvgl version
 
 # Use these full target names to ensure build variables are set correctly
