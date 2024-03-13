@@ -66,11 +66,6 @@ static bool end_tick = false; /* flag to terminate thread */
 /**********************
  *      MACROS
  **********************/
-/* TODO: Replace with DISP_..._RES? */
-#if !USE_SDL
-#define MONITOR_HOR_RES 800
-#define MONITOR_VER_RES 600
-#endif
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -206,21 +201,23 @@ int main(int argc, char **argv)
 
   /*add your ui here, if using demos make sure the appropriate guard is defined*/
 
-  #if LV_USE_DEMO_BENCHMARK /*add -D LV_USE_DEMO_BENCHMARK=1 to your make file*/
+  // Switch demo by updating lv_demo_conf.h
+  #if LV_USE_DEMO_BENCHMARK
   lv_demo_benchmark();
-  #elif LV_USE_DEMO_KEYPAD_AND_ENCODER /*add -D LV_USE_DEMO_KEYPAD_AND_ENCODER=1 to your make file*/
+  #elif LV_USE_DEMO_KEYPAD_AND_ENCODER
   lv_demo_keypad_encoder();
-  #elif LV_USE_DEMO_MUSIC /*add -D LV_USE_DEMO_MUSIC=1 to your make file*/
+  #elif LV_USE_DEMO_MUSIC
   lv_demo_music();
-  #elif LV_USE_DEMO_STRESS /*add -D LV_USE_DEMO_STRESS=1 to your make file*/
+  #elif LV_USE_DEMO_STRESS
   lv_demo_stress();
-  #elif LV_USE_DEMO_WIDGETS /*add -D LV_USE_DEMO_WIDGETS=1 to your make file*/
+  #elif LV_USE_DEMO_WIDGETS
   lv_demo_widgets();
   #else
   //user_image_demo();
   my_gui(); /*replace this with your gui*/
   #endif
 
+  // TODO: Move to hal_init/tick_thread?
 #if USE_WIN32DRV
   while(!lv_win32_quit_signal) {
 #else
@@ -276,17 +273,17 @@ static void hal_init(void)
 
   /*Create a display buffer*/
   static lv_disp_draw_buf_t disp_buf1;
-  static lv_color_t buf1_1[MONITOR_HOR_RES * 100];
-  static lv_color_t buf1_2[MONITOR_HOR_RES * 100];
-  lv_disp_draw_buf_init(&disp_buf1, buf1_1, buf1_2, MONITOR_HOR_RES * 100);
+  static lv_color_t buf1_1[DISP_HOR_RES * 100];
+  static lv_color_t buf1_2[DISP_HOR_RES * 100];
+  lv_disp_draw_buf_init(&disp_buf1, buf1_1, buf1_2, DISP_HOR_RES * 100);
 
   /*Create a display*/
   static lv_disp_drv_t disp_drv;
   lv_disp_drv_init(&disp_drv); /*Basic initialization*/
   disp_drv.draw_buf = &disp_buf1;
   disp_drv.flush_cb = sdl_display_flush;
-  disp_drv.hor_res = MONITOR_HOR_RES;
-  disp_drv.ver_res = MONITOR_VER_RES;
+  disp_drv.hor_res = DISP_HOR_RES;
+  disp_drv.ver_res = DISP_VER_RES;
   disp_drv.antialiasing = 1;
 
   disp = lv_disp_drv_register(&disp_drv);
@@ -302,7 +299,7 @@ static void hal_init(void)
   indev_drv_3.read_cb = sdl_mousewheel_read;
 #elif USE_WIN32DRV
   /* Init monitor, mouse and keyboard */
-  lv_win32_init(instance, showCmd, MONITOR_HOR_RES, MONITOR_VER_RES, NULL);
+  lv_win32_init(instance, showCmd, DISP_HOR_RES, DISP_VER_RES, NULL);
 #elif USE_X11
   lv_x11_init("LVGL Simulator Demo", DISP_HOR_RES, DISP_VER_RES);
 

@@ -44,7 +44,7 @@ smallwin64drv:   LDFLAGS := -Wl,--gc-sections
 win64sdl:        LDFLAGS := -L./ui/simulator/dlls
 
 # Add simulator define to allow modification of source
-build:              DEFINES += -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1 -D LV_USE_DEMO_WIDGETS=1
+build:              DEFINES += -D SIMULATOR=1 -D LV_BUILD_TEST=0 -D LV_CONF_INCLUDE_SIMPLE=1
 $(SDLTARGETS):      DEFINES += -D USE_SDL=1
 $(WIN64TARGETS):    DEFINES += -D __WIN64__ -D LV_PRId32=PRId32 -D LV_PRIu32=PRIu32
 $(X11TARGETS):      DEFINES += -D USE_X11=1

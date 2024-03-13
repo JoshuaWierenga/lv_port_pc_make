@@ -7,7 +7,7 @@
  * COPY THIS FILE AS lv_demo_conf.h
  */
 
-#if 0 /*Set it to "1" to enable the content*/
+#if 1 /*Set it to "1" to enable the content*/
 
 #ifndef LV_EX_CONF_H
 #define LV_EX_CONF_H
@@ -15,8 +15,8 @@
 /*====================
    SIMULATION SETTINGS
  *====================*/
-#define DISP_HOR_RES 800
-#define DISP_VER_RES 600
+#define DISP_HOR_RES 1024
+#define DISP_VER_RES 768
 
 /*******************
  * GENERAL SETTING
@@ -39,16 +39,16 @@
 #define LV_USE_DEMO_PRINTER     0
 
 /*Demonstrate the usage of encoder and keyboard*/
-#define LV_USE_DEMO_KEYPAD_AND_ENCODER     1
+#define LV_USE_DEMO_KEYPAD_AND_ENCODER     0
 
 /*Benchmark your system*/
-#define LV_USE_DEMO_BENCHMARK   1
+#define LV_USE_DEMO_BENCHMARK   0
 
 /*Stress test for LVGL*/
-#define LV_USE_DEMO_STRESS      1
+#define LV_USE_DEMO_STRESS      0
 
 /*Music player demo*/
-#define LV_USE_DEMO_MUSIC      1
+#define LV_USE_DEMO_MUSIC      0
 #if LV_USE_DEMO_MUSIC
 # define LV_DEMO_MUSIC_LANDSCAPE 0
 # define LV_DEMO_MUSIC_LARGE     0
