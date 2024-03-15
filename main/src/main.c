@@ -7,28 +7,8 @@
 /*********************
  *      INCLUDES
  *********************/
-#define _DEFAULT_SOURCE /* needed for usleep() */
-#include <stdlib.h>
-#include <unistd.h>
-#include "lv_drv_conf.h"
 #include "lvgl/lvgl.h"
-#include "lvgl/examples/lv_examples.h"
 #include "lvgl/demos/lv_demos.h"
-#if USE_SDL
-  #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
-  #include <SDL2/SDL.h>
-  #include "lv_drivers/sdl/sdl.h"
-// #include "lv_drivers/display/monitor.h"
-// #include "lv_drivers/indev/mouse.h"
-// #include "lv_drivers/indev/keyboard.h"
-// #include "lv_drivers/indev/mousewheel.h"
-#elif USE_WIN32DRV
-  #include <windows.h>
-  #include "lv_drivers/win32drv/win32drv.h"
-#elif USE_X11
-  #include <pthread.h>
-  #include "lv_drivers/x11/x11.h"
-#endif
 
 /*********************
  *      DEFINES
@@ -41,26 +21,18 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void user_image_demo();
+//static void user_image_demo();
 static void hal_init(void);
-#if USE_SDL
-static int tick_thread(void *data);
-#elif USE_WIN32DRV
-static DWORD tick_thread(void *data);
-#elif USE_X11
-static void hal_deinit(void);
-static void* tick_thread(void *data);
-#endif
 
 /**********************
  *  STATIC VARIABLES
  **********************/
-#if USE_WIN32DRV
-static HINSTANCE instance = NULL;
-static int showCmd = 0;
-#elif USE_X11
-static pthread_t thr_tick;    /* thread */
-static bool end_tick = false; /* flag to terminate thread */
+static int32_t monitor_hor_res = -1;
+static int32_t monitor_ver_res = -1;
+#if LV_USE_WINDOWS
+static wchar_t *window_title = NULL;
+#else
+static char *window_title = NULL;
 #endif
 
 /**********************
@@ -178,19 +150,17 @@ static void user_image_demo()
 }
 #endif
 
-#if USE_WIN32DRV
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-{
-  (void)hPrevInstance; /* Unused*/
-  (void)lpCmdLine; /*Unused*/
-
-  instance = hInstance;
-  showCmd = nShowCmd;
-#else
 int main(int argc, char **argv)
 {
   (void)argc; /*Unused*/
   (void)argv; /*Unused*/
+
+  monitor_hor_res = 1024;
+  monitor_ver_res = 768;
+#if LV_USE_WINDOWS
+  window_title = L"LVGL Demo";
+#else
+  window_title = "LVGL Demo";
 #endif
 
   /*Initialize LVGL*/
@@ -201,7 +171,7 @@ int main(int argc, char **argv)
 
   /*add your ui here, if using demos make sure the appropriate guard is defined*/
 
-  // Switch demo by updating lv_demo_conf.h
+  // Switch demo by updating the "DEMO USAGE" section in lv_conf.h
   #if LV_USE_DEMO_BENCHMARK
   lv_demo_benchmark();
   #elif LV_USE_DEMO_KEYPAD_AND_ENCODER
@@ -218,20 +188,10 @@ int main(int argc, char **argv)
   #endif
 
   // TODO: Move to hal_init/tick_thread?
-#if USE_WIN32DRV
-  while(!lv_win32_quit_signal) {
-#else
   while(1) {
-#endif
-    /* Periodically call the lv_task handler.
-     * It could be done in a timer interrupt or an OS task too.*/
-    lv_timer_handler();
-    usleep(5 * 1000);
+    lv_task_handler();
   }
 
-#if USE_X11
-  hal_deinit();
-#endif
   return 0;
 }
 
@@ -245,88 +205,53 @@ int main(int argc, char **argv)
  */
 static void hal_init(void)
 {
-#if USE_SDL || USE_X11
-  /* mouse input device */
-  static lv_indev_drv_t indev_drv_1;
-  lv_indev_drv_init(&indev_drv_1);
-  indev_drv_1.type = LV_INDEV_TYPE_POINTER;
-
-  /* keyboard input device */
-  static lv_indev_drv_t indev_drv_2;
-  lv_indev_drv_init(&indev_drv_2);
-  indev_drv_2.type = LV_INDEV_TYPE_KEYPAD;
-
-  /* mouse scroll wheel input device */
-  static lv_indev_drv_t indev_drv_3;
-  lv_indev_drv_init(&indev_drv_3);
-  indev_drv_3.type = LV_INDEV_TYPE_ENCODER;
+#if LV_USE_SDL
+  lv_display_t *display = lv_sdl_window_create(monitor_hor_res, monitor_ver_res);
 
   lv_group_t *g = lv_group_create();
   lv_group_set_default(g);
 
-  lv_disp_t *disp = NULL;
+  /* create input devices */
+  lv_indev_t *mouse = lv_sdl_mouse_create();
+  lv_indev_t *mousewheel = lv_sdl_mousewheel_create();
+  lv_indev_t *keyboard = lv_sdl_keyboard_create();
+
+  /* register input devices */
+  lv_indev_set_group(mouse, g);
+  lv_indev_set_group(mousewheel, g);
+  lv_indev_set_group(keyboard, g);
+
+  lv_sdl_window_set_title(display, window_title);
+
+  // TODO: Use lv_sdl_window_set_resizeable?
+#elif LV_USE_WINDOWS
+  lv_display_t *display = lv_windows_create_display(window_title, monitor_hor_res, monitor_ver_res, 100, false, false);
+
+  lv_group_t *g = lv_group_create();
+  lv_group_set_default(g);
+
+  /* create input devices */
+  lv_indev_t *mouse = lv_windows_acquire_pointer_indev(display);
+  lv_indev_t *mousewheel = lv_windows_acquire_keypad_indev(display);
+  lv_indev_t *keyboard = lv_windows_acquire_encoder_indev(display);
+
+  /* register input devices */
+  lv_indev_set_group(mouse, g);
+  lv_indev_set_group(mousewheel, g);
+  lv_indev_set_group(keyboard, g);
+#elif LV_USE_X11
+  // TODO: Fix warning when using on screen keyboard on both button press and release(so four errors total, F, 3, F, 3)
+  // draw_letter: lv_draw_letter: glyph dsc. not found for U+FE8F lv_draw_label.c:380
+  // draw_letter: lv_draw_letter: glyph dsc. not found for U+FE83 lv_draw_label.c:380
+  // TODO: Fix crash during closing
+  // lv_display_set_buffers: Asserted at expression: buf1 != NULL Null buffer lv_display.c:401
+  lv_display_t *display = lv_x11_window_create(window_title, monitor_hor_res, monitor_ver_res);
+  lv_x11_inputs_create(display, NULL);
 #endif
 
-#if USE_SDL
-  /* Use the 'monitor' driver which creates window on PC's monitor to simulate a display*/
-  sdl_init();
-
-  /*Create a display buffer*/
-  static lv_disp_draw_buf_t disp_buf1;
-  static lv_color_t buf1_1[DISP_HOR_RES * 100];
-  static lv_color_t buf1_2[DISP_HOR_RES * 100];
-  lv_disp_draw_buf_init(&disp_buf1, buf1_1, buf1_2, DISP_HOR_RES * 100);
-
-  /*Create a display*/
-  static lv_disp_drv_t disp_drv;
-  lv_disp_drv_init(&disp_drv); /*Basic initialization*/
-  disp_drv.draw_buf = &disp_buf1;
-  disp_drv.flush_cb = sdl_display_flush;
-  disp_drv.hor_res = DISP_HOR_RES;
-  disp_drv.ver_res = DISP_VER_RES;
-  disp_drv.antialiasing = 1;
-
-  disp = lv_disp_drv_register(&disp_drv);
-
-  /* Add the input device driver */
-  // mouse_init();
-  indev_drv_1.read_cb = sdl_mouse_read;
-
-  // keyboard_init();
-  indev_drv_2.read_cb = sdl_keyboard_read;
-
-  // mousewheel_init();
-  indev_drv_3.read_cb = sdl_mousewheel_read;
-#elif USE_WIN32DRV
-  /* Init monitor, mouse and keyboard */
-  lv_win32_init(instance, showCmd, DISP_HOR_RES, DISP_VER_RES, NULL);
-#elif USE_X11
-  lv_x11_init("LVGL Simulator Demo", DISP_HOR_RES, DISP_VER_RES);
-
-  /*Create a display buffer*/
-  static lv_disp_draw_buf_t disp_buf1;
-  static lv_color_t buf1_1[DISP_HOR_RES * 100];
-  static lv_color_t buf1_2[DISP_HOR_RES * 100];
-  lv_disp_draw_buf_init(&disp_buf1, buf1_1, buf1_2, DISP_HOR_RES * 100);
-
-  /*Create a display*/
-  static lv_disp_drv_t disp_drv;
-  lv_disp_drv_init(&disp_drv);
-  disp_drv.draw_buf = &disp_buf1;
-  disp_drv.flush_cb = lv_x11_flush;
-  disp_drv.hor_res = DISP_HOR_RES;
-  disp_drv.ver_res = DISP_VER_RES;
-  disp_drv.antialiasing = 1;
-
-  disp = lv_disp_drv_register(&disp_drv);
-
-  /* Add the input device driver */
-  indev_drv_1.read_cb = lv_x11_get_pointer;
-  indev_drv_2.read_cb = lv_x11_get_keyboard;
-  indev_drv_3.read_cb = lv_x11_get_mousewheel;
-#endif
-
-#if USE_SDL || USE_X11
+// TODO: Readd theme and/or custom mouse?
+#if 0
+#if LV_USE_SDL || LV_USE_X11
   /* Set diplay theme */
   /* TODO: Fix LV_USE_THEME_MONO on linux SDL and use on all targets? */
 #if LV_USE_THEME_MONO
@@ -338,29 +263,7 @@ static void hal_init(void)
   lv_disp_set_theme(disp, th);
 #endif
 
-/* TODO: Rewrite macro checks to check os instead of the driver being used */
-#if USE_SDL
-  /* Tick init.
-  * You have to call 'lv_tick_inc()' in periodically to inform LittelvGL about
-  * how much time were elapsed Create an SDL thread to do this*/
-  SDL_CreateThread(tick_thread, "tick", NULL);
-#elif USE_WIN32DRV
-  /* Tick init */
-  CreateThread(NULL, 0, tick_thread, NULL, 0, NULL);
-#elif USE_X11
-  /* This assumes xlib is only available for posix oses which is wrong */
-  /* Tick init */
-  end_tick = false;
-  pthread_create(&thr_tick, NULL, tick_thread, NULL);
-#endif
-
-#if USE_SDL || USE_X11
-  /* register input devices */
-  lv_indev_t *mouse_indev = lv_indev_drv_register(&indev_drv_1);
-  lv_indev_t *kb_indev = lv_indev_drv_register(&indev_drv_2);
-  lv_indev_t *enc_indev = lv_indev_drv_register(&indev_drv_3);
-  lv_indev_set_group(kb_indev, g);
-  lv_indev_set_group(enc_indev, g);
+#if LV_USE_SDL || LV_USE_X11
 
   // TODO: Support this with win32drv? Currently it results in two mouse cursors
   /* Set a cursor for the mouse */
@@ -369,51 +272,5 @@ static void hal_init(void)
   lv_img_set_src(cursor_obj, &mouse_cursor_icon);      /*Set the image source*/
   lv_indev_set_cursor(mouse_indev, cursor_obj);        /*Connect the image  object to the driver*/
 #endif
-}
-
-/**
- * Releases the Hardware Abstraction Layer (HAL) for the LVGL graphics library
- */
-#if USE_X11
-static void hal_deinit(void)
-{
-  end_tick = true;
-  pthread_join(thr_tick, NULL);
-  lv_x11_deinit();
-}
-#endif
-
-/**
- * A task to measure the elapsed time for LVGL
- * @param data unused
- * @return never return
- */
-#if USE_SDL
-static int tick_thread(void *data) {
-#elif USE_WIN32DRV
-static DWORD tick_thread(void *data) {
-#elif USE_X11
-static void* tick_thread(void *data) {
-#endif
-  (void)data;
-
-#if USE_X11
-  while(!end_tick) {
-    usleep(5000);
-#else
-  while(1) {
-  #if USE_SDL
-    SDL_Delay(5);
-  #elif USE_WIN32DRV
-    Sleep(5);
-  #endif
-#endif
-    lv_tick_inc(5); /*Tell LittelvGL that 5 milliseconds were elapsed*/
-  }
-
-#if USE_X11
-  return NULL;
-#else
-  return 0;
 #endif
 }

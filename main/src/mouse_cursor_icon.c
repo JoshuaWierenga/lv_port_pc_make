@@ -94,6 +94,8 @@ const uint8_t mouse_cursor_icon_map[] = {
 #endif
 };
 
+// TODO: Readd this, it broke with lvgl 9.0.0
+#if 0
 lv_img_dsc_t mouse_cursor_icon = {
     .header.always_zero = 0,
     .header.w = 14,
@@ -102,3 +104,4 @@ lv_img_dsc_t mouse_cursor_icon = {
     .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
     .data = mouse_cursor_icon_map,
 };
+#endif
