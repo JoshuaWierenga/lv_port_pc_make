@@ -4,10 +4,7 @@
 
 # TODO: Fix make's "Argument list too long" error on msys2
 # TODO: Fix seg fault on linux with LV_USE_THEME_MONO enabled
-# TODO: Fix keyboard support with win32drv hal
-# TODO: Fix performance issues with win32drv hal(just animations?)
 # TODO: Add x11 support on windows using nano-X?
-# TODO: Update to a newer lvgl version
 # TODO: Support GTK?
 # TODO: Support Wayland?
 # TODO: Support fbdev? libinput? evdev?
@@ -59,8 +56,8 @@ CFLAGS += -O0 -g $(WARNINGS)
 # but currently the posix and stdio fs drivers use d_type
 # without first checking for _DIRENT_HAVE_D_TYPE or at least
 # _BSD_SOURCE
-$(POSIXTARGETS): CFLAGS += -std=gnu99
-$(WIN64TARGETS): BUILDCCFLAGS := -mwindows
+$(POSIXTARGETS):  CFLAGS += -std=gnu99
+$(WIN64TARGETS):  BUILDCCFLAGS := -mwindows
 smallwin64native: LDFLAGS := -Wl,--gc-sections
 win64sdl:         LDFLAGS := -L./ui/simulator/dlls
 
